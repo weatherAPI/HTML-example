@@ -1,0 +1,61 @@
+<head>
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <link type="text/css" rel="stylesheet" href="css/hero.css" />
+        <meta charset="UTF-8">
+    </head>
+    <body>
+
+    <div id='loading' style='display:none;'>Locating You</div>
+    <div id="weather">
+            <ul id="icon">
+                <li><img src="http://icons.wunderground.com/graphics/autobrand/sfgate2012/current_icons/<%= observation.icon_code %>.png" /></li>
+            </ul>
+            <ul class="delete">
+                <li id='temp'></li>
+                <li id='location'></li>
+                <li id='cond'></li>
+            </ul>
+        </div>
+    </body>
+
+<script type="text/javascript">
+$(document).ready(function(e) {
+
+                var locationjqxhr = $.get("http://ipinfo.io", function(response) {
+                        }, "jsonp")
+                        .always(function(){
+                             $('#loading').show();
+                        })
+                        .done(function(){
+                             $('#loading').hide();
+                        });
+
+                locationjqxhr.done(function(response) {
+                        var ll=response.loc.split(",");
+                        var lat=ll[0];
+                        var lon=ll[1];
+                        var city = response.city
+                        var base='http://api.weather.com/v2/geocode/'+lat+'/'+lon+'/aggregate.json?';
+                        //console.log('url', base+decodeURIComponent($.param(params)));
+                        var params = {
+                                'apiKey':'###Your API Key Here###',
+                                'units':'e',
+                                'language':'en',
+                                //'products': 'conditions,fcstdaily10,fcsthourly24'
+                                'products': 'conditions'
+                        }
+
+                        $.ajax({
+                                url: base+decodeURIComponent($.param(params)),
+                                success: function(returnhtml){
+                                        console.log('json', returnhtml);
+                                        $("#temp").html(returnhtml.conditions.data.observation.imperial.temp);
+                                        $("#cond").html(returnhtml.conditions.data.observation.phrase_32char);
+                                        $("#location").html(city);
+                                }
+                        });
+                });
+});
+
+</script>
+
